@@ -1,0 +1,566 @@
+#1
+def aStarAlgo(start_node, stop_node):
+    open_set = set(start_node)
+    closed_set = set()
+    g = {}
+    parents = {}
+    g[start_node] = 0
+    parents[start_node] = start_node
+    while len(open_set) > 0:
+        n = None
+        for v in open_set:
+            if n == None or g[v]+heuristic(v) < g[n] + heuristic(n):
+                n = v
+        if n == stop_node or Graph_nodes[n] == None:
+            pass
+        else:
+            for (m, weight) in get_neighbors(n):
+                if m not in open_set and m not in closed_set:
+                    open_set.add(m)
+                    parents[m] = n
+                    g[m] = g[n] + weight
+                else:
+                    if g[m] > g[n] + weight:
+                        g[m] = g[n] + weight
+                        parents[m] = n
+                        if m in closed_set:
+                            closed_set.remove(m)
+                            open_set.add(m)
+        if n == None:
+            print('Path does not exist!')
+            return None
+        if n == stop_node:
+            path = []
+            while parents[n] != n:
+                path.append(n)
+                n = parents[n]
+            path.append(start_node)
+            path.reverse()
+            print('Path found: {}'.format(path))
+            return path
+        open_set.remove(n)
+        closed_set.add(n)
+    print('Path does not exist!')
+    return None
+
+def get_neighbors(v):
+    if v in Graph_nodes:
+        return Graph_nodes[v]
+    else:
+        return None
+
+def heuristic(n):
+    H_dist = {
+    'A': 11,
+    'B': 6,
+    'C': 99,
+    'D': 1,
+    'E': 7,
+    'G': 0,
+    }
+    return H_dist[n]
+
+Graph_nodes = {
+'A': [('B', 2), ('E', 3)],
+'B': [('C', 1),('G', 9)],
+'C': None,
+'E': [('D', 6)],
+'D': [('G', 1)],
+}
+aStarAlgo('A', 'G')
+------------------------------------------------------------------------------------------------------------
+#2
+# Program to Implement recursive AO* Algorithm
+class Graph:
+    def __init__(self, graph, heuristicNodeList, startNode):
+        self.graph = graph
+        self.H=heuristicNodeList
+        self.start=startNode
+        self.parent={}
+        self.status={}
+        self.solutionGraph={}
+        
+    def applyAOStar(self): 
+        self.aoStar(self.start, False)
+    
+    def getNeighbors(self, v): 
+        return self.graph.get(v,'')
+    
+    def getStatus(self,v): 
+        return self.status.get(v,0)
+    
+    def setStatus(self,v, val): 
+        self.status[v]=val
+    
+    def getHeuristicNodeValue(self, n):
+        return self.H.get(n,0) 
+    
+    def setHeuristicNodeValue(self, n, value):
+        self.H[n]=value 
+    
+    def printSolution(self):
+        print("FOR GRAPH SOLUTION, TRAVERSE THE GRAPH FROM THE START NODE:",self.start)
+        print("------------------------------------------------------------")
+        print(self.solutionGraph)
+        print("------------------------------------------------------------")
+    
+    def computeMinimumCostChildNodes(self, v):
+        minimumCost=0
+        costToChildNodeListDict={}
+        costToChildNodeListDict[minimumCost]=[]
+        flag=True
+        for nodeInfoTupleList in self.getNeighbors(v):
+            cost=0
+            nodeList=[]
+            for c, weight in nodeInfoTupleList:
+                cost=cost+self.getHeuristicNodeValue(c)+weight
+                nodeList.append(c)
+                if flag==True: 
+                    minimumCost=cost
+                    costToChildNodeListDict[minimumCost]=nodeList 
+                    flag=False
+                else: 
+                    if minimumCost>cost:
+                        minimumCost=cost
+                        costToChildNodeListDict[minimumCost]=nodeList 
+        return minimumCost, costToChildNodeListDict[minimumCost] 
+
+    def aoStar(self, v, backTracking):
+        print("HEURISTIC VALUES :", self.H)
+        print("SOLUTION GRAPH :", self.solutionGraph)
+        print("PROCESSING NODE :", v)
+        print("-----------------------------------------------------------------------------------------")
+        if self.getStatus(v) >= 0:
+            minimumCost, childNodeList = self.computeMinimumCostChildNodes(v)
+            print(minimumCost, childNodeList)
+            self.setHeuristicNodeValue(v, minimumCost)
+            self.setStatus(v,len(childNodeList))
+            solved=True 
+            for childNode in childNodeList:
+                self.parent[childNode]=v
+                if self.getStatus(childNode)!=-1:
+                    solved=solved & False
+            if solved==True: 
+                self.setStatus(v,-1)
+                self.solutionGraph[v]=childNodeList 
+            if v!=self.start: 
+                self.aoStar(self.parent[v], True) 
+            if backTracking==False:
+                for childNode in childNodeList: 
+                    self.setStatus(childNode,0) 
+                    self.aoStar(childNode, False) 
+                
+h1 = {'A': 1, 'B': 6, 'C': 2, 'D': 12, 'E': 2, 'F': 1, 'G': 5, 'H': 7, 'I': 7, 'J': 1}
+graph1 = {
+'A': [[('B', 1), ('C', 1)], [('D', 1)]],
+'B': [[('G', 1)], [('H', 1)]],
+'C': [[('J', 1)]],
+'D': [[('E', 1), ('F', 1)]],
+'G': [[('I', 1)]]
+}
+
+G1= Graph(graph1, h1, 'A')
+G1.applyAOStar()
+G1.printSolution()
+-----------------------------------------------------------------------------------------------------------------
+# 3 
+import pandas as pd 
+import numpy as np 
+data = pd.DataFrame(data = pd.read_csv("finds.csv"))
+concepts = np.array(data.iloc[:, 0:-1])
+target = np.array(data.iloc[:,-1])
+
+def learn(concepts, target):
+    specific_h = [0,0,0,0,0,0]
+    print('so', specific_h)
+    specific_h = concepts[0].copy()
+    print('s1', specific_h)
+    general_h = [["?" for i in range(len(specific_h))] for i in range(len(specific_h))]
+    print('go', general_h)
+    for i, h in enumerate(concepts):
+        if target[i] == 'Yes':
+            for x in range(len(specific_h)):
+                if h[x] != specific_h[x]:
+                    specific_h[x] = "?"
+                    general_h[x][x] = "?"
+                    print(f"s{x}", specific_h)
+                    print(f"g{x}", general_h)
+        if target[i] == 'No':
+            for x in range(len(specific_h)):
+                if h[x] != specific_h[x]:
+                    general_h[x][x] = specific_h[x]
+        else:
+            general_h[x][x] = "?"
+        indices = [i for i,val in enumerate(general_h) if val == ["?","?","?","?","?","?"] ]
+        for i in indices:
+            general_h.remove(["?","?","?","?","?","?"])
+            print('i', indices)
+    return general_h, specific_h
+s_final, g_final = learn(concepts, target)
+-----------------------------------------------------------------------------------------------------------------
+#4
+import pandas as pd
+import numpy as np
+import math
+
+class Node:
+    def _init_(self, l):
+        self.label = l
+        self.branch = {}
+
+def entropy(data):
+    total_ex = len(data)
+    p_ex = len(data.loc[data['play'] == 'Yes'])
+    n_ex = len(data.loc[data['play'] == 'No'])
+    en = 0
+    if p_ex > 0:
+        en = -(p_ex / float(total_ex)) * (math.log(p_ex, 2) - math.log(total_ex, 2))
+    if n_ex > 0:
+        en += -(n_ex / float(total_ex)) * (math.log(n_ex, 2) - math.log(total_ex, 2))
+    return en
+
+def gain(en_s, data_s, attrib):
+    values = set(data_s[attrib])
+    gain = en_s
+    for value in values:
+        gain -= len(data_s.loc[data_s[attrib] == value]) / float(len(data_s)) * entropy(data_s.loc[data_s[attrib] == value])
+    return gain
+
+def get_attr(data):
+    en_s = entropy(data)
+    attribute = ""
+    max_gain = 0
+    for attr in data.columns[:len(data.columns) - 1]:
+        g = gain(en_s, data, attr)
+        if g > max_gain:
+            max_gain = g
+            attribute = attr
+    return attribute
+
+def decision_tree(data):
+    root = Node("NULL")
+    if entropy(data) == 0:
+        if len(data.loc[data[data.columns[-1]] == "Yes"]) == len(data):
+            root.label = "Yes"
+        else:
+            root.label = "No"
+        return root
+    if len(data.columns) == 1:
+        return
+    else:
+        attr = get_attr(data)
+        root.label = attr
+        values = set(data[attr])
+        for value in values:
+            root.branch[value] = decision_tree(data.loc[data[attr] == value].drop(attr, axis=1))
+        return root
+
+def get_rules(root, rule, rules):
+    if not root.branch:
+        rules.append(rule[:-1] + "=>" + root.label)
+        return rules
+    for val in root.branch:
+        get_rules(root.branch[val], rule + root.label + "=" + str(val) + "^", rules)
+    return rules
+
+def test(tree, test_str):
+    if not tree.branch:
+        return tree.label
+    return test(tree.branch[str(test_str[tree.label])], test_str)
+
+data = pd.read_csv("playtennis.csv")
+tree = decision_tree(data)
+rules = get_rules(tree, " ", [])
+
+
+test_str = {}
+print("Enter the test case input: ")
+for attr in data.columns[:-1]:
+    test_str[attr] = input(attr + ": ")
+print(test_str)
+print(test(tree, test_str))
+-----------------------------------------------------------------------------------------------------------------
+#5
+import time
+import numpy as np 
+
+X = np.array(([2,9], [1,5], [3,6]), dtype=float)
+y = np.array(([92], [86], [89]), dtype=float)
+X = X / np.amax(X, axis=0)
+y = y / 100
+start = time.time()
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def derivatives_sigmoid(x):
+    return x * (1-x)
+
+# Vars
+epoch = 700
+lr = 0.1
+inputlayer_nuerons = 2
+hiddenlayer_nuerons = 3
+outputlayer_nuerons = 1
+
+wh = np.random.uniform(size=(inputlayer_nuerons, hiddenlayer_nuerons))
+bh = np.random.uniform(size=(1, hiddenlayer_nuerons))
+wout = np.random.uniform(size=(hiddenlayer_nuerons, outputlayer_nuerons))
+bout = np.random.uniform(size=(1, outputlayer_nuerons))
+
+for i in range(epoch):
+    '''forward'''
+    hinp1 = np.dot(X, wh)
+    hinp = hinp1 + bh
+    hlayer_act = sigmoid(hinp)
+    outinp1 = np.dot(hlayer_act, wout)
+    outinp = outinp1 + bout
+    output = sigmoid(outinp)
+    '''Backward'''
+    EO = y - output
+    outgrad = derivatives_sigmoid(output)
+    d_output = EO * outgrad
+    EH = d_output.dot(wout.T)
+    hiddengrad = derivatives_sigmoid(hlayer_act)
+    d_hiddenlayer = EH * hiddengrad
+    
+    wout += hlayer_act.T.dot(d_output) * lr
+    wh += X.T.dot(d_hiddenlayer) * lr
+    
+    end = time.time()
+    
+print("Input x", str(X))
+print("Input y", str(y))
+print("Predicted output", output)
+print("ET: {}".format(end-start))
+-----------------------------------------------------------------------------------------------------------------
+#6
+import csv
+import random
+import math
+def loadCsv(filename):
+    lines = csv.reader(open(filename, "r"))
+    dataset = list(lines)
+    for i in range(len(dataset)):
+        dataset[i] = [float(x) for x in dataset[i]]
+    return dataset
+
+def splitDataset(dataset, splitRatio):
+    trainSize = int(len(dataset) * splitRatio)
+    trainSet = []
+    copy = list(dataset)
+    while len(trainSet) < trainSize:
+        index = random.randrange(len(copy))
+        trainSet.append(copy.pop(index))
+    return [trainSet, copy]
+
+def separateByClass(dataset):
+    separated = {}
+    for i in range(len(dataset)):
+        vector = dataset[i]
+        if (vector[-1] not in separated):
+            separated[vector[-1]] = []
+        separated[vector[-1]].append(vector)
+    return separated
+
+def mean(numbers):
+    return sum(numbers)/float(len(numbers))
+
+def stdev(numbers):
+    avg = mean(numbers)
+    variance = sum([pow(x-avg,2) for x in numbers])/float(len(numbers)-1)
+    return math.sqrt(variance)
+
+def summarize(dataset):
+    summaries = [(mean(attribute), stdev(attribute)) for attribute in zip(*dataset)]
+    del summaries[-1]
+    return summaries
+
+def summarizeByClass(dataset):
+    separated = separateByClass(dataset)
+    summaries = {}
+    for classValue, instances in separated.items():
+        summaries[classValue] = summarize(instances)
+    return summaries
+
+def calculateProbability(x, mean, stdev):
+    exponent = math.exp(-(math.pow(x-mean,2)/(2*math.pow(stdev,2))))
+    return (1 / (math.sqrt(2*math.pi) * stdev)) * exponent
+
+def calculateClassProbabilities(summaries, inputVector):
+    probabilities = {}
+    for classValue, classSummaries in summaries.items():
+        probabilities[classValue] = 1
+        for i in range(len(classSummaries)):
+            mean, stdev = classSummaries[i]
+            x = inputVector[i]
+            probabilities[classValue] *= calculateProbability(x, mean, stdev)
+    return probabilities
+
+def predict(summaries, inputVector):
+    probabilities = calculateClassProbabilities(summaries, inputVector)
+    bestLabel, bestProb = None, -1
+    for classValue, probability in probabilities.items():
+        if bestLabel is None or probability > bestProb:
+            bestProb = probability
+            bestLabel = classValue
+    return bestLabel
+
+def getPredictions(summaries, testSet):
+    predictions = []
+    for i in range(len(testSet)):
+        result = predict(summaries, testSet[i])
+        predictions.append(result)
+    return predictions
+
+def getAccuracy(testSet, predictions):
+    correct = 0
+    for i in range(len(testSet)):
+        if testSet[i][-1] == predictions[i]:
+            correct += 1
+    return (float(correct)/float(len(testSet))) * 100.0
+
+def main():
+    filename = 'NaiveBayesDiabetes.csv'
+    dataset = loadCsv(filename)
+    trainingSet=dataset
+    testSet=loadCsv('NaiveBayesDiabetes1.csv')
+    print('Records in training data={0} and test data={1} rows'.format(len(trainingSet), len(testSet)))
+    # prepare model
+    summaries = summarizeByClass(trainingSet)
+    # test model
+    predictions = getPredictions(summaries, testSet)
+    print(predictions)
+    accuracy = getAccuracy(testSet, predictions)
+    print("Accuracy:",accuracy,"%")
+main()
+
+-----------------------------------------------------------------------------------------------------------------
+#7
+import matplotlib.pyplot as plt
+from sklearn import datasets
+from sklearn.cluster import KMeans
+import pandas as pd
+import numpy as np
+# import some data to play with
+iris = datasets.load_iris()
+X = pd.DataFrame(iris.data)
+X.columns = ['Sepal_Length','Sepal_Width','Petal_Length','Petal_Width']
+y = pd.DataFrame(iris.target)
+y.columns = ['Targets']
+# Build the K Means Model
+model = KMeans(n_clusters=3)
+# model.labels_ : Gives cluster no for which samples belongs to
+model.fit(X)
+# Visualise the clustering results
+plt.figure(figsize=(14,14))
+colormap = np.array(['red', 'lime', 'black'])
+# Plot the Original Classifications using Petal features
+plt.subplot(2, 2, 1)
+plt.scatter(X.Petal_Length, X.Petal_Width, c=colormap[y.Targets], s=40)
+plt.title('Real Clusters')
+plt.xlabel('Petal Length')
+plt.ylabel('Petal Width')
+plt.show()
+# Plot the Models Classifications
+plt.subplot(2, 2, 2)
+plt.scatter(X.Petal_Length, X.Petal_Width, c=colormap[model.labels_], s=40)
+plt.title('K-Means Clustering')
+plt.xlabel('Petal Length')
+plt.ylabel('Petal Width')
+plt.show()
+# General EM for GMM
+from sklearn import preprocessing
+# transform your data such that its distribution will have a
+# mean value 0 and standard deviation of 1.
+scaler = preprocessing.StandardScaler()
+scaler.fit(X)
+xsa = scaler.transform(X)
+xs = pd.DataFrame(xsa, columns = X.columns)
+from sklearn.mixture import GaussianMixture
+gmm = GaussianMixture(n_components=3)
+gmm.fit(xs)
+gmm_y = gmm.predict(xs)
+plt.subplot(2, 2, 3)
+plt.scatter(X.Petal_Length, X.Petal_Width, c=colormap[gmm_y], s=40)
+plt.title('GMM Clustering')
+plt.xlabel('Petal Length')
+plt.ylabel('Petal Width')
+plt.show()
+print('Observation: The GMM using EM algorithm based clustering matched the true labels more closely than the Kmeans.')
+
+-----------------------------------------------------------------------------------------------------------------------
+#8
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn import datasets
+
+iris=datasets.load_iris()
+print("Iris Data set loaded...")
+x_train, x_test, y_train, y_test = train_test_split(iris.data,iris.target,test_size=0.1)
+print("Dataset is split into training and testing...")
+print("Size of trainng data and its label",x_train.shape,y_train.shape)
+print("Size of trainng data and its label",x_test.shape, y_test.shape)
+
+for i in range(len(iris.target_names)):
+	print("Label", i , "-",str(iris.target_names[i])) 
+classifier = KNeighborsClassifier(n_neighbors=1) 
+classifier.fit(x_train, y_train) 
+y_pred=classifier.predict(x_test) 
+print("Results of Classification using K-nn with K=1 ") 
+for r in range(0,len(x_test)): 
+	print(" Sample:", str(x_test[r]), " Actual-label:", str(y_test[r]), " Predicted-label:", str(y_pred[r])) 
+print("Classification Accuracy :" , classifier.score(x_test,y_test))
+
+from sklearn.metrics import classification_report, confusion_matrix
+print('Confusion Matrix')
+print(confusion_matrix(y_test,y_pred))
+print('Accuracy Metrics')
+print(classification_report(y_test,y_pred))
+-----------------------------------------------------------------------------------------------------------------------
+# 9
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+
+def kernel(point,xmat, k):
+    m,n = np.shape(xmat)
+    weights = np.mat(np.eye((m))) 
+    for j in range(m):
+        diff = point - X[j]
+    weights[j,j] = np.exp(diff*diff.T/(-2.0*k**2))
+    return weights
+
+def localWeight(point,xmat,ymat,k):
+    wei = kernel(point,xmat,k)
+    W = (X.T*(wei*X)).I*(X.T*(wei*ymat.T))
+    return W
+
+def localWeightRegression(xmat,ymat,k):
+    m,n = np.shape(xmat)
+    ypred = np.zeros(m)
+    for i in range(m):
+        ypred[i] = xmat[i]*localWeight(xmat[i],xmat,ymat,k)
+    return ypred
+
+def graphPlot(X,ypred):
+    sortindex = X[:,1].argsort(0) 
+    xsort = X[sortindex][:,0]
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
+    ax.scatter(bill,tip, color='green')
+    ax.plot(xsort[:,1],ypred[sortindex], color = 'red', linewidth=5)
+    plt.xlabel('Total bill')
+    plt.ylabel('Tip')
+    plt.show()
+
+data = pd.read_csv('Program9_dataset_tips.csv')
+bill = np.array(data.total_bill)
+tip = np.array(data.tip)
+mbill = np.mat(bill) 
+mtip = np.mat(tip)
+m= np.shape(mbill)[1]
+one = np.mat(np.ones(m))
+X = np.hstack((one.T,mbill.T)) 
+ypred = localWeightRegression(X,mtip,9)
+graphPlot(X,ypred)
